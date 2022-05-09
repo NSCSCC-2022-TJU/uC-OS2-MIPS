@@ -15,12 +15,14 @@ SUBDIRS	= user src
 LIBS  =	user/user.o src/ucos2.o
 OBJDIR = ./obj
 
-KERNEL_BIN = $(OBJDIR)/ucosii.bin
+KERNEL_BIN = $(OBJDIR)/ucosii.om
 
+GDB = ~/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/mips-sde-elf-gdb
+OBJDUMP = ~/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/mips-sde-elf-objdump
 # QEMU 配置
-QEMU := qemu-system-mipsel
+QEMU=qemu-system-mipsel
 
-QEMUOPTS = -M mipssim -m 32M -nographic -kernel $(KERNEL_BIN) -monitor none -serial stdio
+QEMUOPTS=-M mipssim -bios none -m 32M -nographic -kernel $(KERNEL_BIN) -monitor none -serial stdio
 
 #########################################################################
 
@@ -51,6 +53,9 @@ subdirs:
 qemu: $(KERNEL_BIN)
 	$(QEMU) $(QEMUOPTS)
 
+asm: $(KERNEL_BIN)
+	@$(OBJDUMP) -d $(KERNEL_BIN) > kernel.asm
+
 
 clean:
 	find . -type f \
@@ -72,5 +77,11 @@ distclean: clean
 		-print | xargs rm -f
 	rm -f $(OBJS) *.bak tags TAGS
 	rm -fr *.*~
+
+debug: $(KERNEL_BIN)
+	@tmux new-session -d \
+		"$(QEMU) $(QEMUOPTS) -s -S" && \
+		tmux split-window -h "$(GDB) -ex 'file $(KERNEL_BIN)' -ex 'set arch mipsel' -ex 'target remote localhost:1234'" && \
+		tmux -2 attach-session -d
 
 #########################################################################
