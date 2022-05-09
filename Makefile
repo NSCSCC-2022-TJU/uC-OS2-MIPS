@@ -22,7 +22,14 @@ OBJDUMP = ~/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/mips-sde-
 # QEMU 配置
 QEMU=qemu-system-mipsel
 
-QEMUOPTS=-M mipssim -bios none -m 32M -nographic -kernel $(KERNEL_BIN) -monitor none -serial stdio
+QEMUOPTS=  -machine mipssim \
+		   -m 32M \
+		   -nographic \
+		   -bios none \
+		   -kernel $(KERNEL_BIN) \
+		   -monitor none -serial stdio
+
+KERNEL_ENTRY_PA := 0x80000000
 
 #########################################################################
 
