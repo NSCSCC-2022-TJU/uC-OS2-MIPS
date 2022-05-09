@@ -22,7 +22,7 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
 RANLIB	= $(CROSS_COMPILE)ranlib
 
-CFLAGS += -I$(TOPDIR)/Include -I$(TOPDIR)/Include/user -I$(TOPDIR)/Source -I$(TOPDIR)/User -mips1 -G0 -O2 -EL# -Wall -Wstrict-prototypes -Werror-implicit-function-declaration -fomit-frame-pointer -fno-strength-reduce -O2 -g -pipe -fno-builtin -nostdlib
+CFLAGS += -I$(TOPDIR)/include -I$(TOPDIR)/include/user -I$(TOPDIR)/src -I$(TOPDIR)/user -mips1 -G0 -O2 -EL# -Wall -Wstrict-prototypes -Werror-implicit-function-declaration -fomit-frame-pointer -fno-strength-reduce -O2 -g -pipe -fno-builtin -nostdlib
 
 ASFLAGS += $(CFLAGS) -EL
 

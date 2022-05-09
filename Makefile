@@ -4,7 +4,6 @@ endif
 
 export	CROSS_COMPILE
 
-#########################################################################
 
 TOPDIR	:= $(shell if [ "$$PWD" != "" ]; then echo $$PWD; else pwd; fi)
 export	TOPDIR
@@ -12,9 +11,16 @@ export	TOPDIR
 include $(TOPDIR)/config.mk
 
 # order is important here:
-SUBDIRS	= User Source Port
-LIBS  =	User/user.o Source/source.o Port/port.o
+SUBDIRS	= user src
+LIBS  =	user/user.o src/ucos2.o
 OBJDIR = ./obj
+
+KERNEL_BIN = $(OBJDIR)/ucosii.bin
+
+# QEMU 配置
+QEMU := qemu-system-mipsel
+
+QEMUOPTS = -M mipssim -m 32M -nographic -kernel $(KERNEL_BIN) -monitor none -serial stdio
 
 #########################################################################
 
@@ -33,13 +39,18 @@ ucosii.bin: ucosii.om
 ucosii.asm: ucosii.om
 	mips-sde-elf-objdump -D $< > $@
 
-#########################################################################
+
 
 depend dep:
 	@for dir in $(SUBDIRS) ; do $(MAKE) -C $$dir .depend ; done
 
 subdirs:
 	@for dir in $(SUBDIRS) ; do $(MAKE) -C $$dir || exit 1 ; done
+
+
+qemu: $(KERNEL_BIN)
+	$(QEMU) $(QEMUOPTS)
+
 
 clean:
 	find . -type f \

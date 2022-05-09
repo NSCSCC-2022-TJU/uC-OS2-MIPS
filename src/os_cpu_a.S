@@ -1,34 +1,25 @@
 /*
 *********************************************************************************************************
-*                                              uC/OS-II
-*                                        The Real-Time Kernel
+*                                               uC/OS-II
+*                                         The Real-Time Kernel
 *
-*                    Copyright 1992-2021 Silicon Laboratories Inc. www.silabs.com
+*                             (c) Copyright 2010, Micrium, Inc., Weston, FL
+*                                           All Rights Reserved
 *
-*                                 SPDX-License-Identifier: APACHE-2.0
+*                                               MIPS14K
+*                                              MicroMips
 *
-*               This software is subject to an open source license and is distributed by
-*                Silicon Laboratories Inc. pursuant to the terms of the Apache License,
-*                    Version 2.0 available at www.apache.org/licenses/LICENSE-2.0.
-*
+* File    : os_cpu_a.S
+* Version : v2.90
+* By	  : NB
 *********************************************************************************************************
 */
 
-
-/*
-*********************************************************************************************************
-*
-*                                                MIPS14K
-*                                               MicroMips
-*
-* Filename : os_cpu_a.S
-* Version  : V2.93.01
-*********************************************************************************************************
-*/
-
+    /*
     .section .text,"ax",@progbits
     .set noreorder
     .set noat
+    */
 
 /*
 *********************************************************************************************************
@@ -87,8 +78,48 @@
 .equ    STK_OFFSET_GPR27,   STK_OFFSET_GPR26 + 4
 .equ    STK_OFFSET_GPR28,   STK_OFFSET_GPR27 + 4
 .equ    STK_OFFSET_GPR30,   STK_OFFSET_GPR28 + 4
-.equ    STK_OFFSET_GPR31,   STK_OFFSET_GPR30 + 4
+.equ    STK_OFFSET_GPR31,   STK_OFFSET_GPR30 + 4 
 .equ    STK_CTX_SIZE,       STK_OFFSET_GPR31 + 4
+
+    // 添加下面的stack section
+    .section .stack, "aw", @nobits
+
+.space  0x10000
+    // 添加下面的vector section
+    .section .vectors, "ax"
+    
+    .org 0x0
+_reset:
+    lui $28,0x0
+    la $29,_stack_addr
+    la $26,main  /* 跳转至main函数开始运行操作系统 */
+    jr $26
+    nop
+
+    .org 0x380
+    // 根据Cause寄存器的exccode段确定是中断还是异常
+    mfc0 $8, $13
+    li $9, 0x7c
+    and $8, $8, $9
+    
+    beqz $8, INT_EXC
+    nop
+
+    // 异常处理入口
+    la $26,ExceptionHandler
+    jr $26
+    nop
+
+INT_EXC:
+    // 中断处理入口
+    la $26,InterruptHandler
+    jr $26
+    nop
+
+    //定义代码段和编译选项
+    .section .text,"ax",@progbits
+    .set noreorder
+    .set noat
 
 /*
 *********************************************************************************************************
@@ -118,7 +149,7 @@
 *                                        + 0x80    GPR[28]
 *                                        + 0x84    GPR[30]
 *                                        + 0x88    GPR[31]                       (HIGH Memory)
-*
+*                              
 * Note(s): 1) OSTaskStkInit(), which is responsible for initializing each task's stack, sets bit 0 of the
 *             entry corresponding to the Status register.  Thus, interrupts will be enabled when each
 *             task first runs.
@@ -129,13 +160,13 @@
 OSStartHighRdy:
 
     la    $8,  OSTaskSwHook                    /* Call OSTaskSwHook()                                  */
-
-    addu  $9,  $31, $0                         /* Mask off the ISAMode bit                             */
+    /*
+    addu  $9,  $31, $0                         /* Mask off the ISAMode bit                             
     srl   $9,  16
     andi  $31, 0xFFFE
     sll   $9,  16
     addu  $31, $31, $9
-
+    */
     jalr  $8
     nop
 
@@ -144,14 +175,14 @@ OSStartHighRdy:
     sb    $8,  0($9)
 
     la    $8,  OSTCBHighRdy                    /* Update the current TCB                               */
-    lw    $9,  0($8)
+    lw    $9,  0($8) 
     lw    $29, 0($9)                           /* Load the new task's stack pointer                    */
 
     lw    $8,  STK_OFFSET_SR($29)              /* Restore the Status register                          */
-    mtc0  $8,  $12, 0
+    mtc0  $8,  $12
 
     lw    $8,  STK_OFFSET_EPC($29)             /* Restore the EPC                                      */
-    mtc0  $8,  $14, 0
+    mtc0  $8,  $14
 
     lw    $8,  STK_OFFSET_LO($29)              /* Restore the contents of the LO and HI registers      */
     lw    $9,  STK_OFFSET_HI($29)
@@ -159,40 +190,40 @@ OSStartHighRdy:
     mthi  $9
 
     lw    $31, STK_OFFSET_GPR31($29)           /* Restore the General Purpose Registers                */
-    lw    $30, STK_OFFSET_GPR30($29)
+    lw    $30, STK_OFFSET_GPR30($29) 
     lw    $28, STK_OFFSET_GPR28($29)
-    lw    $27, STK_OFFSET_GPR27($29)
-    lw    $26, STK_OFFSET_GPR26($29)
-    lw    $25, STK_OFFSET_GPR25($29)
-    lw    $24, STK_OFFSET_GPR24($29)
-    lw    $23, STK_OFFSET_GPR23($29)
-    lw    $22, STK_OFFSET_GPR22($29)
-    lw    $21, STK_OFFSET_GPR21($29)
-    lw    $20, STK_OFFSET_GPR20($29)
-    lw    $19, STK_OFFSET_GPR19($29)
-    lw    $18, STK_OFFSET_GPR18($29)
-    lw    $17, STK_OFFSET_GPR17($29)
-    lw    $16, STK_OFFSET_GPR16($29)
-    lw    $15, STK_OFFSET_GPR15($29)
-    lw    $14, STK_OFFSET_GPR14($29)
-    lw    $13, STK_OFFSET_GPR13($29)
-    lw    $12, STK_OFFSET_GPR12($29)
-    lw    $11, STK_OFFSET_GPR11($29)
-    lw    $10, STK_OFFSET_GPR10($29)
-    lw    $9,  STK_OFFSET_GPR9($29)
-    lw    $8,  STK_OFFSET_GPR8($29)
-    lw    $7,  STK_OFFSET_GPR7($29)
-    lw    $6,  STK_OFFSET_GPR6($29)
-    lw    $5,  STK_OFFSET_GPR5($29)
-    lw    $4,  STK_OFFSET_GPR4($29)
-    lw    $3,  STK_OFFSET_GPR3($29)
-    lw    $2,  STK_OFFSET_GPR2($29)
-    lw    $1,  STK_OFFSET_GPR1($29)
-
-    ei
+    lw    $27, STK_OFFSET_GPR27($29) 
+    lw    $26, STK_OFFSET_GPR26($29) 
+    lw    $25, STK_OFFSET_GPR25($29) 
+    lw    $24, STK_OFFSET_GPR24($29) 
+    lw    $23, STK_OFFSET_GPR23($29) 
+    lw    $22, STK_OFFSET_GPR22($29) 
+    lw    $21, STK_OFFSET_GPR21($29) 
+    lw    $20, STK_OFFSET_GPR20($29) 
+    lw    $19, STK_OFFSET_GPR19($29) 
+    lw    $18, STK_OFFSET_GPR18($29) 
+    lw    $17, STK_OFFSET_GPR17($29) 
+    lw    $16, STK_OFFSET_GPR16($29) 
+    lw    $15, STK_OFFSET_GPR15($29) 
+    lw    $14, STK_OFFSET_GPR14($29) 
+    lw    $13, STK_OFFSET_GPR13($29) 
+    lw    $12, STK_OFFSET_GPR12($29) 
+    lw    $11, STK_OFFSET_GPR11($29) 
+    lw    $10, STK_OFFSET_GPR10($29) 
+    lw    $9,  STK_OFFSET_GPR9($29)  
+    lw    $8,  STK_OFFSET_GPR8($29)  
+    lw    $7,  STK_OFFSET_GPR7($29)  
+    lw    $6,  STK_OFFSET_GPR6($29)  
+    lw    $5,  STK_OFFSET_GPR5($29)  
+    lw    $4,  STK_OFFSET_GPR4($29)  
+    lw    $3,  STK_OFFSET_GPR3($29) 
+    lw    $2,  STK_OFFSET_GPR2($29)  
+    lw    $1,  STK_OFFSET_GPR1($29) 
+    
+    /* ei */
 
     jr    $31                                  /* Resume execution in the new task                     */
-    addi  $29, $29, STK_CTX_SIZE               /* Adjust the stack pointer                             */
+    addi  $29, $29, STK_CTX_SIZE               /* Adjust the stack pointer                             */   
 
     .end OSStartHighRdy
 
@@ -236,24 +267,24 @@ OSStartHighRdy:
 *                                        + 0x84    GPR[30]
 *                                        + 0x88    GPR[31]                       (HIGH Memory)
 *********************************************************************************************************
-*/
+*/            
 
     .ent OSIntCtxSw
 OSIntCtxSw:
 
     la    $8,  OSTaskSwHook                    /* Call OSTaskSwHook()                                  */
-
-    addu  $9,  $31, $0                         /* Mask off the ISAMode bit                             */
+    /*
+    addu  $9,  $31, $0                         /* Mask off the ISAMode bit                             
     srl   $9,  16
     andi  $31, 0xFFFE
     sll   $9,  16
     addu  $31, $31, $9
-
+    */
     jalr  $8
     nop
 
     la    $8,  OSPrioHighRdy                   /* Update the current priority                          */
-    lbu   $9,  0($8)
+    lbu   $9,  0($8) 
     la    $10, OSPrioCur
     sb    $9,  0($10)
 
@@ -265,10 +296,10 @@ OSIntCtxSw:
     lw    $29, 0($9)                           /* Load the new task's stack pointer                    */
 
     lw    $8,  STK_OFFSET_SR($29)              /* Restore the Status register                          */
-    mtc0  $8,  $12, 0
+    mtc0  $8,  $12
 
     lw    $8,  STK_OFFSET_EPC($29)             /* Restore the EPC                                      */
-    mtc0  $8,  $14, 0
+    mtc0  $8,  $14
 
     lw    $8,  STK_OFFSET_LO($29)              /* Restore the contents of the LO and HI registers      */
     lw    $9,  STK_OFFSET_HI($29)
@@ -276,41 +307,42 @@ OSIntCtxSw:
     mthi  $9
 
     lw    $31, STK_OFFSET_GPR31($29)           /* Restore the General Purpose Registers                */
-    lw    $30, STK_OFFSET_GPR30($29)
+    lw    $30, STK_OFFSET_GPR30($29) 
     lw    $28, STK_OFFSET_GPR28($29)
-    lw    $27, STK_OFFSET_GPR27($29)
-    lw    $26, STK_OFFSET_GPR26($29)
-    lw    $25, STK_OFFSET_GPR25($29)
-    lw    $24, STK_OFFSET_GPR24($29)
-    lw    $23, STK_OFFSET_GPR23($29)
-    lw    $22, STK_OFFSET_GPR22($29)
-    lw    $21, STK_OFFSET_GPR21($29)
-    lw    $20, STK_OFFSET_GPR20($29)
-    lw    $19, STK_OFFSET_GPR19($29)
-    lw    $18, STK_OFFSET_GPR18($29)
-    lw    $17, STK_OFFSET_GPR17($29)
-    lw    $16, STK_OFFSET_GPR16($29)
-    lw    $15, STK_OFFSET_GPR15($29)
-    lw    $14, STK_OFFSET_GPR14($29)
-    lw    $13, STK_OFFSET_GPR13($29)
-    lw    $12, STK_OFFSET_GPR12($29)
-    lw    $11, STK_OFFSET_GPR11($29)
-    lw    $10, STK_OFFSET_GPR10($29)
-    lw    $9,  STK_OFFSET_GPR9($29)
-    lw    $8,  STK_OFFSET_GPR8($29)
-    lw    $7,  STK_OFFSET_GPR7($29)
-    lw    $6,  STK_OFFSET_GPR6($29)
-    lw    $5,  STK_OFFSET_GPR5($29)
-    lw    $4,  STK_OFFSET_GPR4($29)
-    lw    $3,  STK_OFFSET_GPR3($29)
-    lw    $2,  STK_OFFSET_GPR2($29)
-    lw    $1,  STK_OFFSET_GPR1($29)
+    lw    $27, STK_OFFSET_GPR27($29) 
+    lw    $26, STK_OFFSET_GPR26($29) 
+    lw    $25, STK_OFFSET_GPR25($29) 
+    lw    $24, STK_OFFSET_GPR24($29) 
+    lw    $23, STK_OFFSET_GPR23($29) 
+    lw    $22, STK_OFFSET_GPR22($29) 
+    lw    $21, STK_OFFSET_GPR21($29) 
+    lw    $20, STK_OFFSET_GPR20($29) 
+    lw    $19, STK_OFFSET_GPR19($29) 
+    lw    $18, STK_OFFSET_GPR18($29) 
+    lw    $17, STK_OFFSET_GPR17($29) 
+    lw    $16, STK_OFFSET_GPR16($29) 
+    lw    $15, STK_OFFSET_GPR15($29) 
+    lw    $14, STK_OFFSET_GPR14($29) 
+    lw    $13, STK_OFFSET_GPR13($29) 
+    lw    $12, STK_OFFSET_GPR12($29) 
+    lw    $11, STK_OFFSET_GPR11($29) 
+    lw    $10, STK_OFFSET_GPR10($29) 
+    lw    $9,  STK_OFFSET_GPR9($29)  
+    lw    $8,  STK_OFFSET_GPR8($29)  
+    lw    $7,  STK_OFFSET_GPR7($29)  
+    lw    $6,  STK_OFFSET_GPR6($29)  
+    lw    $5,  STK_OFFSET_GPR5($29)  
+    lw    $4,  STK_OFFSET_GPR4($29)  
+    lw    $3,  STK_OFFSET_GPR3($29) 
+    lw    $2,  STK_OFFSET_GPR2($29)  
+    lw    $1,  STK_OFFSET_GPR1($29) 
 
-    addi  $29, $29, STK_CTX_SIZE               /* Adjust the stack pointer                             */
+    addi  $29, $29, STK_CTX_SIZE               /* Adjust the stack pointer                             */   
 
-    ei
-
+    /* ei */
+    .set mips32
     eret                                       /* Resume execution in new task                         */
+    .set mips1
 
     .end OSIntCtxSw
 
@@ -320,9 +352,9 @@ OSIntCtxSw:
 *                                   OS_CPU_SR  OS_CPU_SR_Save(void);
 *
 * Description: This function saves the state of the Status register and then disables interrupts via this
-*              register.  This objective is accomplished with a single instruction, di.  The di
-*              instruction's operand, $2, is the general purpose register to which the Status register's
-*              value is saved.  This value can be read by C functions that call OS_CPU_SR_Save().
+*              register.  This objective is accomplished with a single instruction, di.  The di 
+*              instruction's operand, $2, is the general purpose register to which the Status register's 
+*              value is saved.  This value can be read by C functions that call OS_CPU_SR_Save().  
 *
 * Arguments  : None
 *
@@ -333,8 +365,14 @@ OSIntCtxSw:
     .ent OS_CPU_SR_Save
 OS_CPU_SR_Save:
 
+    ori   $2,$2,0x0
+    mfc0  $2,$12
+    addi  $3,$0,0xfffe
+    and   $3,$2,$3
+    mtc0  $3,$12
     jr    $31
-    di    $2                                   /* Disable interrupts, and move the old value of the... */
+    nop
+    /* di    $2 */                                   /* Disable interrupts, and move the old value of the... */
                                                /* ...Status register into v0 ($2)                      */
     .end OS_CPU_SR_Save
 
@@ -344,7 +382,7 @@ OS_CPU_SR_Save:
 *                                  void OS_CPU_SR_Restore(OS_CPU_SR sr);
 *
 * Description: This function must be used in tandem with OS_CPU_SR_Save().  Calling OS_CPU_SR_Restore()
-*              causes the value returned by OS_CPU_SR_Save() to be placed in the Status register.
+*              causes the value returned by OS_CPU_SR_Save() to be placed in the Status register. 
 *
 * Arguments  : The value to be placed in the Status register
 *
@@ -356,11 +394,9 @@ OS_CPU_SR_Save:
 OS_CPU_SR_Restore:
 
     jr    $31
-    mtc0  $4, $12, 0                           /* Restore the status register to its previous state    */
+    mtc0  $4, $12                           /* Restore the status register to its previous state    */
 
     .end OS_CPU_SR_Restore
-
-    .section .timer_handler,"ax",@progbits
 
 /*
 *********************************************************************************************************
@@ -393,11 +429,12 @@ OS_CPU_SR_Restore:
 
     .ent InterruptHandler
 InterruptHandler:
-    di                                         /* Disable Interrupts                                   */
+    /* 2013-9-27???????????????di???  */
+    /* di */
 
-    addi  $29, $29, -STK_CTX_SIZE              /* Adjust the stack pointer                             */
-
-    sw    $1,  STK_OFFSET_GPR1($29)            /* Save the General Pupose Registers                    */
+    /**** 第一段：保护现场，寄存器压栈 ****/
+    addi  $29, $29, -STK_CTX_SIZE
+    sw    $1,  STK_OFFSET_GPR1($29)
     sw    $2,  STK_OFFSET_GPR2($29)
     sw    $3,  STK_OFFSET_GPR3($29)
     sw    $4,  STK_OFFSET_GPR4($29)
@@ -426,89 +463,85 @@ InterruptHandler:
     sw    $27, STK_OFFSET_GPR27($29)
     sw    $28, STK_OFFSET_GPR28($29)
     sw    $30, STK_OFFSET_GPR30($29)
-    sw    $31, STK_OFFSET_GPR31($29)
-                                               /* Save the contents of the LO and HI registers         */
+    sw    $31, STK_OFFSET_GPR31($29)     
+    
+    /* Save the contents of the LO and HI registers */
     mflo  $8
     mfhi  $9
     sw    $8,  STK_OFFSET_LO($29)
     sw    $9,  STK_OFFSET_HI($29)
-
-    mfc0  $8,  $14, 0                          /* Save the EPC                                         */
+    /* Save the EPC */
+    mfc0  $8,  $14                         
     sw    $8,  STK_OFFSET_EPC($29)
-
-    mfc0  $8,  $12, 0
+    /* Save the Status */
+    mfc0  $8,  $12
     sw    $8,  STK_OFFSET_SR($29)
 
-    la    $8,  OSIntNesting                    /* See if OSIntNesting == 0                             */
-    lbu   $9,  0($8)
+    /**** 第二段：OSIntNesting加1 ****/
+    /* 获取OSIntNesting的值  */
+    la    $8,  OSIntNesting                    
+    lbu   $9,  0($8)  
+
+    // OSIntNesting不为0，则转移到TICK_INC_NESTING
     bne   $0,  $9, TICK_INC_NESTING
     nop
-
-    la    $10, OSTCBCur                        /* Save the current task's stack pointer                */
+    // OSIntNesting为0，则进行下面的操作
+    /* Save the current task''s stack pointer */
+    la    $10, OSTCBCur                        
     lw    $11, 0($10)
     sw    $29, 0($11)
 
 TICK_INC_NESTING:
 
-    addi  $9,  $9, 1                           /* Increment OSIntNesting                               */
+    /* Increment OSIntNesting */
+    addi  $9,  $9, 1                           
     sb    $9,  0($8)
 
+    /**** 第三段：中断处理 ****/
 INT_LOOP:
+    // 读取Cause寄存器的IP字段
+    mfc0  $8,  $13
+    li  $9, 0xff00
+    and $9, $8, $9
+    
+    la  $8, BSP_Interrupt_Handler
 
-    mfc0  $8,  $13                             /* Get the "Interrupt Pending" field from the Cause reg */
-
-    li    $9,  0x3                             /* Mask out the "Interrupt Pending" field               */
-    sll   $9,  16
-    li    $10, 0xFC00
-    addu  $9,  $10
-
-    and   $8,  $9
-
-    clz   $8,  $8                              /* Count leading zeros to find all pending interrupts   */
-    move  $4,  $8
-    la    $8,  BSP_Interrupt_Handler           /* Call BSP_Interrupt_Handler() to handle the interrupt */
-
-    li    $9,  32                              /* Load the compared value for the loop(while cnt != 32)*/
-    beq   $4,  $9, INT_LOOP_END
+    // 中断个数为0，则转移到INT_LOOP_END
+    beqz    $9, INT_LOOP_END
     nop
 
-    addu  $9,  $31, $0                         /* Mask off the ISAMode bit                             */
-    srl   $9,  16
-    andi  $31, 0xFFFE
-    sll   $9,  16
-    addu  $31, $31, $9
-
+    // 否则转移到具体的中断处理函数BSP_Interrupt_Handler
     jalr  $8
     nop
-
+    // 处理其余中断
     b     INT_LOOP
     nop
 
+    /**** 第四段：中断处理结束 ****/
 INT_LOOP_END:
 
-    la    $8,  OSIntExit                       /* Call OSIntExit()                                     */
-
-    addu  $9,  $31, $0                         /* Mask off the ISAMode bit                             */
-    srl   $9,  16
-    andi  $31, 0xFFFE
-    sll   $9,  16
-    addu  $31, $31, $9
+    la    $8,  OSIntExit    /* Call OSIntExit()  */
 
     jalr  $8
     nop
 
-    lw    $8,  STK_OFFSET_SR($29)              /* Restore the Status register                          */
-    mtc0  $8,  $12, 0
+	 /**** 第五段：恢复现场并返回 ****/
+/* Restore the Status register */
+    lw    $8,  STK_OFFSET_SR($29) 
+    mtc0  $8,  $12
 
-    lw    $8,  STK_OFFSET_EPC($29)             /* Restore the EPC                                      */
-    mtc0  $8,  $14, 0
+	 /* Restore the EPC */
+    lw    $8,  STK_OFFSET_EPC($29)             
+    mtc0  $8,  $14
 
-    lw    $8,  STK_OFFSET_LO($29)              /* Restore the contents of the LO and HI registers      */
+    /* Restore the contents of the LO and HI registers */
+    lw    $8,  STK_OFFSET_LO($29)              
     lw    $9,  STK_OFFSET_HI($29)
     mtlo  $8
     mtlo  $9
 
-    lw    $31, STK_OFFSET_GPR31($29)           /* Restore the General Purpose Registers                */
+    /* Restore the General Purpose Registers */
+    lw    $31, STK_OFFSET_GPR31($29)           
     lw    $30, STK_OFFSET_GPR30($29)
     lw    $28, STK_OFFSET_GPR28($29)
     lw    $27, STK_OFFSET_GPR27($29)
@@ -539,15 +572,14 @@ INT_LOOP_END:
     lw    $2,  STK_OFFSET_GPR2($29)
     lw    $1,  STK_OFFSET_GPR1($29)
 
-    addi  $29, $29, STK_CTX_SIZE               /* Adjust the stack pointer                             */
-
-    ei                                         /* Enable Interrupts                                   */
-
-    eret
+    /* Adjust the stack pointer */
+    addi  $29, $29, STK_CTX_SIZE          
+    
+    .set mips32
+    eret                                       /* Resume execution in new task                         */
+    .set mips1
 
     .end InterruptHandler
-
-    .section .gen_excpt,"ax",@progbits
 
 /*
 *********************************************************************************************************
@@ -580,11 +612,13 @@ INT_LOOP_END:
 
     .ent ExceptionHandler
 ExceptionHandler:
-    di
+    /* di */
 
-    addi  $29, $29, -STK_CTX_SIZE              /* Adjust the stack pointer                             */
-
-    sw    $1,  STK_OFFSET_GPR1($29)            /* Save the General Pupose Registers                    */
+    /**** 第一段：保护现场，寄存器压栈 ****/
+    addi  $29, $29, -STK_CTX_SIZE          
+          
+    /* Save the General Pupose Registers */
+    sw    $1,  STK_OFFSET_GPR1($29)            
     sw    $2,  STK_OFFSET_GPR2($29)
     sw    $3,  STK_OFFSET_GPR3($29)
     sw    $4,  STK_OFFSET_GPR4($29)
@@ -614,88 +648,92 @@ ExceptionHandler:
     sw    $28, STK_OFFSET_GPR28($29)
     sw    $30, STK_OFFSET_GPR30($29)
     sw    $31, STK_OFFSET_GPR31($29)
-                                               /* Save the contents of the LO and HI registers         */
+    
+    /* Save the contents of the LO and HI registers */
     mflo  $8
     mfhi  $9
     sw    $8,  STK_OFFSET_LO($29)
     sw    $9,  STK_OFFSET_HI($29)
 
-    mfc0  $8,  $14, 0                          /* Save the EPC                                         */
+    /* Save the EPC */
+    mfc0  $8,  $14                          
     addi  $8,  $8, 4
     sw    $8,  STK_OFFSET_EPC($29)
 
-    mfc0  $8,  $12, 0
+    mfc0  $8,  $12
     sw    $8,  STK_OFFSET_SR($29)
 
-    la    $10, OSTCBCur                        /* Save the current task's stack pointer                */
+    /* Save the current task''s stack pointer */
+    la    $10, OSTCBCur                        
     lw    $11, 0($10)
     sw    $29, 0($11)
 
-    la    $8,  BSP_Exception_Handler           /* Call BSP_ISR_Handler() to handle the interrupt       */
-
-    addu  $9,  $31, $0                         /* Mask off the ISAMode bit                             */
-    srl   $9,  16
-    andi  $31, 0xFFFE
-    sll   $9,  16
-    addu  $31, $31, $9
-
+    /****第二段：异常处理 ****/
+    /* Call BSP_ISR_Handler() to handle the interrupt */
+    la    $8,  BSP_Exception_Handler           
     jalr  $8
     nop
-
+    
+    /**** 第三段：恢复现场 ****/
     la    $10, OSTCBCur
     lw    $9,  0($10)
 
-    lw    $29, 0($9)                           /* Load the new task's stack pointer                    */
-
-    lw    $8,  STK_OFFSET_SR($29)              /* Restore the Status register                          */
-    mtc0  $8,  $12, 0
-
-    lw    $8,  STK_OFFSET_EPC($29)             /* Restore the EPC                                      */
-    mtc0  $8,  $14, 0
-
-    lw    $8,  STK_OFFSET_LO($29)              /* Restore the contents of the LO and HI registers      */
+    /* Load the new task''s stack pointer */
+    lw    $29, 0($9)                           
+    /* Restore the Status register */
+    lw    $8,  STK_OFFSET_SR($29)              
+    mtc0  $8,  $12
+    /* Restore the EPC */
+    lw    $8,  STK_OFFSET_EPC($29)             
+    mtc0  $8,  $14
+    /* Restore the contents of the LO and HI registers */
+    lw    $8,  STK_OFFSET_LO($29)              
     lw    $9,  STK_OFFSET_HI($29)
     mtlo  $8
     mtlo  $9
 
-    lw    $31, STK_OFFSET_GPR31($29)           /* Restore the General Purpose Registers                */
-    lw    $30, STK_OFFSET_GPR30($29)
+    /* Restore the General Purpose Registers */
+    lw    $31, STK_OFFSET_GPR31($29)           
+    lw    $30, STK_OFFSET_GPR30($29) 
     lw    $28, STK_OFFSET_GPR28($29)
-    lw    $27, STK_OFFSET_GPR27($29)
-    lw    $26, STK_OFFSET_GPR26($29)
-    lw    $25, STK_OFFSET_GPR25($29)
-    lw    $24, STK_OFFSET_GPR24($29)
-    lw    $23, STK_OFFSET_GPR23($29)
-    lw    $22, STK_OFFSET_GPR22($29)
-    lw    $21, STK_OFFSET_GPR21($29)
-    lw    $20, STK_OFFSET_GPR20($29)
-    lw    $19, STK_OFFSET_GPR19($29)
-    lw    $18, STK_OFFSET_GPR18($29)
-    lw    $17, STK_OFFSET_GPR17($29)
-    lw    $16, STK_OFFSET_GPR16($29)
-    lw    $15, STK_OFFSET_GPR15($29)
-    lw    $14, STK_OFFSET_GPR14($29)
-    lw    $13, STK_OFFSET_GPR13($29)
-    lw    $12, STK_OFFSET_GPR12($29)
-    lw    $11, STK_OFFSET_GPR11($29)
-    lw    $10, STK_OFFSET_GPR10($29)
-    lw    $9,  STK_OFFSET_GPR9($29)
-    lw    $8,  STK_OFFSET_GPR8($29)
-    lw    $7,  STK_OFFSET_GPR7($29)
-    lw    $6,  STK_OFFSET_GPR6($29)
-    lw    $5,  STK_OFFSET_GPR5($29)
-    lw    $4,  STK_OFFSET_GPR4($29)
-    lw    $3,  STK_OFFSET_GPR3($29)
-    lw    $2,  STK_OFFSET_GPR2($29)
-    lw    $1,  STK_OFFSET_GPR1($29)
+    lw    $27, STK_OFFSET_GPR27($29) 
+    lw    $26, STK_OFFSET_GPR26($29) 
+    lw    $25, STK_OFFSET_GPR25($29) 
+    lw    $24, STK_OFFSET_GPR24($29) 
+    lw    $23, STK_OFFSET_GPR23($29) 
+    lw    $22, STK_OFFSET_GPR22($29) 
+    lw    $21, STK_OFFSET_GPR21($29) 
+    lw    $20, STK_OFFSET_GPR20($29) 
+    lw    $19, STK_OFFSET_GPR19($29) 
+    lw    $18, STK_OFFSET_GPR18($29) 
+    lw    $17, STK_OFFSET_GPR17($29) 
+    lw    $16, STK_OFFSET_GPR16($29) 
+    lw    $15, STK_OFFSET_GPR15($29) 
+    lw    $14, STK_OFFSET_GPR14($29) 
+    lw    $13, STK_OFFSET_GPR13($29) 
+    lw    $12, STK_OFFSET_GPR12($29) 
+    lw    $11, STK_OFFSET_GPR11($29) 
+    lw    $10, STK_OFFSET_GPR10($29) 
+    lw    $9,  STK_OFFSET_GPR9($29)  
+    lw    $8,  STK_OFFSET_GPR8($29)  
+    lw    $7,  STK_OFFSET_GPR7($29)  
+    lw    $6,  STK_OFFSET_GPR6($29)  
+    lw    $5,  STK_OFFSET_GPR5($29)  
+    lw    $4,  STK_OFFSET_GPR4($29)  
+    lw    $3,  STK_OFFSET_GPR3($29) 
+    lw    $2,  STK_OFFSET_GPR2($29)  
+    lw    $1,  STK_OFFSET_GPR1($29) 
 
-    addi  $29, $29, STK_CTX_SIZE               /* Adjust the stack pointer                             */
-
-    ei
-
-    eret
+    addi  $29, $29, STK_CTX_SIZE 
+    
+    /* ei */
+    
+    .set mips32
+    eret           
+    .set mips1
 
     .end ExceptionHandler
+
 
 /*
 *********************************************************************************************************
@@ -718,9 +756,10 @@ ExceptionHandler:
     .ent TickInterruptClear
 TickInterruptClear:
 
-    mtc0  $0,  $11                              /* Set up the period in the compare reg                 */
+    // mtc0  $0,  $11                              /* Set up the period in the compare reg                 */
     jr    $31
-    ehb
+    nop
+    //ehb
 
     .end TickInterruptClear
 
@@ -740,11 +779,13 @@ TickInterruptClear:
     .ent CoreTmrInit
 CoreTmrInit:
 
-    mtc0  $4,  $11                              /* Set up the period in the compare reg                */
-    ehb
-    mtc0  $0,  $9                               /* Clear the count reg                                 */
+    // mtc0  $4,  $11                              /* Set up the period in the compare reg                */
+    // ehb
+    nop
+    // mtc0  $0,  $9                               /* Clear the count reg                                 */
     jr    $31
-    ehb
+    nop
+    // ehb
 
     .end CoreTmrInit
 
@@ -764,28 +805,36 @@ CoreTmrInit:
     .ent TickISR
 TickISR:
 
-    move  $16, $31
+    /**** 保护现场 ****/
+    addiu $29,$29,-24
+    sw $16, 0x4($29)
+    sw $8, 0x8($29)
+    sw $31, 0xC($29)
 
-    mfc0  $8,  $11                              /* Get the old compare time                            */
-    addu  $8,  $4                               /* Add the increment value BSP_TMR_RELOAD              */
-    mtc0  $8,  $11                              /* Set up the period in the compare reg                */
+    /*将TIMER中状态控制寄存器TCSR0的第8位(INT)置1，以清除中断*/
+    lui   $8,  0xbfd3
+    lw    $9,  0($8)
+    ori   $9,  0x0100
+    sw    $9,  0($8)
 
-    la    $8,  OSTimeTick                       /* Call OSTimeTick() to signal to the OS a clock tick  */
-
-    addu  $9,  $31, $0                          /* Mask off the ISAMode bit                            */
-    srl   $9,  16
-    andi  $31, 0xFFFE
-    sll   $9,  16
-    addu  $31, $31, $9
+    /* Call OSTimeTick() to signal to the OS a clock tick  */
+    la    $8,  OSTimeTick                       
 
     jalr  $8
     nop
 
-    move  $31, $16
+    /**** 恢复现场 ****/
+    lw $31, 0xC($29)
+    lw $16, 0x4($29)
+    lw $8, 0x8($29)
+    addiu $29,$29,24
+    
+    /**** 函数返回 ****/
     jr    $31
     nop
 
     .end TickISR
+
 
 /*
 *********************************************************************************************************
@@ -825,7 +874,7 @@ DisableInterruptSource:
     .ent EnableInterruptSource
 EnableInterruptSource:
 
-    sll   $4,  10
+    // sll   $4,  10
     mfc0  $8,  $12
     or    $8,  $4
     mtc0  $8,  $12
@@ -833,3 +882,9 @@ EnableInterruptSource:
     nop
 
     .end EnableInterruptSource
+
+
+
+
+
+

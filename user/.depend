@@ -1,0 +1,20 @@
+user.o: user.c /home/kuangjux/lab/uC-OS2-MIPS/include/includes.h \
+ /home/kuangjux/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/../lib/gcc/mips-sde-elf/4.7.3/include/stdarg.h \
+ /home/kuangjux/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/../lib/gcc/mips-sde-elf/4.7.3/include/stddef.h \
+ /home/kuangjux/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/../lib/gcc/mips-sde-elf/4.7.3/include-fixed/limits.h \
+ /home/kuangjux/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/../lib/gcc/mips-sde-elf/4.7.3/include-fixed/syslimits.h \
+ /home/kuangjux/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/../lib/gcc/mips-sde-elf/4.7.3/../../../../mips-sde-elf/include/limits.h \
+ /home/kuangjux/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/../lib/gcc/mips-sde-elf/4.7.3/../../../../mips-sde-elf/include/newlib.h \
+ /home/kuangjux/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/../lib/gcc/mips-sde-elf/4.7.3/../../../../mips-sde-elf/include/_ansi.h \
+ /home/kuangjux/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/../lib/gcc/mips-sde-elf/4.7.3/../../../../mips-sde-elf/include/sys/config.h \
+ /home/kuangjux/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/../lib/gcc/mips-sde-elf/4.7.3/../../../../mips-sde-elf/include/machine/ieeefp.h \
+ /home/kuangjux/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/../lib/gcc/mips-sde-elf/4.7.3/../../../../mips-sde-elf/include/sys/features.h \
+ /home/kuangjux/lab/uC-OS2-MIPS/include/ucos_ii.h \
+ /home/kuangjux/lab/uC-OS2-MIPS/include/app_cfg.h \
+ /home/kuangjux/lab/uC-OS2-MIPS/include/os_cfg.h \
+ /home/kuangjux/lab/uC-OS2-MIPS/include/os_cpu.h \
+ /home/kuangjux/lab/uC-OS2-MIPS/include/cpu.h \
+ /home/kuangjux/lab/uC-OS2-MIPS/include/user/machine.h \
+ /home/kuangjux/lab/uC-OS2-MIPS/include/user/uart.h \
+ /home/kuangjux/lab/uC-OS2-MIPS/include/user/gpio.h \
+ /home/kuangjux/lab/uC-OS2-MIPS/include/user/timer.h

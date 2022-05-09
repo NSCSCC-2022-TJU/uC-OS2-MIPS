@@ -1,24 +1,22 @@
 /*
 *********************************************************************************************************
-*                                              uC/OS-II
-*                                        The Real-Time Kernel
+*                                                uC/OS-II
+*                                          The Real-Time Kernel
 *
-*                    Copyright 1992-2021 Silicon Laboratories Inc. www.silabs.com
+*                              (c) Copyright 1992-2009, Micrium, Weston, FL
+*                                           All Rights Reserved
 *
-*                                 SPDX-License-Identifier: APACHE-2.0
+* File    : uCOS_II.C
+* By      : Jean J. Labrosse
+* Version : V2.91
 *
-*               This software is subject to an open source license and is distributed by
-*                Silicon Laboratories Inc. pursuant to the terms of the Apache License,
-*                    Version 2.0 available at www.apache.org/licenses/LICENSE-2.0.
-*
-*********************************************************************************************************
-*/
-
-
-/*
-*********************************************************************************************************
-* Filename : ucos_ii.c
-* Version  : V2.93.01
+* LICENSING TERMS:
+* ---------------
+*   uC/OS-II is provided in source form for FREE evaluation, for educational use or for peaceful research.  
+* If you plan on using  uC/OS-II  in a commercial product you need to contact Micriµm to properly license 
+* its use in your product. We provide ALL the source code for your convenience and to help you experience 
+* uC/OS-II.   The fact that the  source is provided does  NOT  mean that you can use it without  paying a 
+* licensing fee.
 *********************************************************************************************************
 */
 
@@ -37,3 +35,4 @@
 #include <os_task.c>
 #include <os_time.c>
 #include <os_tmr.c>
+	 	   	  		 			 	    		   		 		 	 	 			 	    		   	 			 	  	 		 				 		  			 		 					 	  	  		      		  	   		      		  	 		 	      		   		 		  	 		 	      		  		  		  

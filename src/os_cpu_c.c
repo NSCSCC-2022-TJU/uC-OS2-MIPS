@@ -1,28 +1,18 @@
 /*
 *********************************************************************************************************
-*                                              uC/OS-II
-*                                        The Real-Time Kernel
+*                                               uC/OS-II
+*                                         The Real-Time Kernel
 *
-*                    Copyright 1992-2021 Silicon Laboratories Inc. www.silabs.com
-*
-*                                 SPDX-License-Identifier: APACHE-2.0
-*
-*               This software is subject to an open source license and is distributed by
-*                Silicon Laboratories Inc. pursuant to the terms of the Apache License,
-*                    Version 2.0 available at www.apache.org/licenses/LICENSE-2.0.
-*
-*********************************************************************************************************
-*/
-
-
-/*
-*********************************************************************************************************
+*                             (c) Copyright 2010, Micrium, Inc., Weston, FL
+*                                          All Rights Reserved
 *
 *                                                MIPS14K
-*                                               MicroMips
+*							                	MicroMips
 *
-* Filename : os_cpu_c.c
-* Version  : V2.93.01
+*
+* File    : os_cpu_c.c
+* Version : v2.90
+* By      : NB
 *********************************************************************************************************
 */
 
@@ -36,15 +26,15 @@
 *********************************************************************************************************
 */
 
-extern char vec[], endvec[];                              /* Create the hardware interrupt vector      */
-asm (".set push\n"
+//extern char vec[], endvec[];                              /* Create the hardware interrupt vector      */
+/*asm (".set push\n"
      ".set nomicromips\n"
      ".align 2\n"
      "vec:\n"
      "\tla  $26,InterruptHandler\n"
      "\tjr  $26\n"
      "endvec:\n"
-     ".set pop\n");
+     ".set pop\n");*/
 
 /*
 *********************************************************************************************************
@@ -52,15 +42,15 @@ asm (".set push\n"
 *********************************************************************************************************
 */
 
-extern char vec2[], endvec2[];                             /* Create the exception vector              */
-asm (".set push\n"
+//extern char vec2[], endvec2[];                             /* Create the exception vector              */
+/*asm (".set push\n"
      ".set nomicromips\n"
      ".align 2\n"
      "vec2:\n"
      "\tla  $26,ExceptionHandler\n"
      "\tjr  $26\n"
      "endvec2:\n"
-     ".set pop\n");
+     ".set pop\n");*/
 
 /*
 *********************************************************************************************************
@@ -77,9 +67,9 @@ asm (".set push\n"
 #if OS_CPU_HOOKS_EN > 0 && OS_VERSION > 203
 void  OSInitHookBegin (void)
 {
-  memcpy ((void *) 0x80000200, vec, endvec - vec);        /* Install the hardware interrupt vector     */
-  memcpy ((void *) 0x80000180, vec2, endvec2 - vec2);     /* Install the exception vector              */
-  mips_clean_cache (0x80000200, 0x80);                    /* Remove the old vectors from cache.        */
+  //memcpy ((void *) 0x80000200, vec, endvec - vec);        /* Install the hardware interrupt vector     */
+  //memcpy ((void *) 0x80000180, vec2, endvec2 - vec2);     /* Install the exception vector              */
+  //mips_clean_cache (0x80000200, 0x80);                    /* Remove the old vectors from cache.        */
 }
 #endif
 
@@ -147,7 +137,7 @@ void  OSTaskDelHook (OS_TCB *ptcb)
 * Note(s)    : 1) Interrupts are disabled during this call.
 *********************************************************************************************************
 */
-#if OS_CPU_HOOKS_EN > 0
+#if OS_CPU_HOOKS_EN > 0 
 void  OSTaskReturnHook (OS_TCB *ptcb)
 {
     ptcb = ptcb;                       /* Prevent compiler warning                                     */
@@ -199,11 +189,11 @@ void  OSTaskStatHook (void)
 *
 * Arguments  : task     is a pointer to the task code.
 *
-*              p_arg    is a pointer to a user supplied data area
+*              p_arg    is a pointer to a user supplied data area 
 *
-*              ptos     is a pointer to the top of stack.  OSTaskStkInit() assumes that 'ptos' points to
-*                       a free entry on the stack.  If OS_STK_GROWTH is set to 1 then 'ptos' will contain
-*                       the HIGHEST valid address of the stack.  Similarly, if OS_STK_GROWTH is set to 0,
+*              ptos     is a pointer to the top of stack.  OSTaskStkInit() assumes that 'ptos' points to 
+*                       a free entry on the stack.  If OS_STK_GROWTH is set to 1 then 'ptos' will contain 
+*                       the HIGHEST valid address of the stack.  Similarly, if OS_STK_GROWTH is set to 0, 
 *                       'ptos' will contain the lowest valid address of the stack.
 *
 *              opt      specifies options that can be used to alter the behavior of OSTaskStkInit()
@@ -212,7 +202,7 @@ void  OSTaskStatHook (void)
 * Returns    : The location corresponding to the top of the stack
 *
 * Note(s)    : 1) Interrupts are enabled when each task starts executing.
-*
+* 
 *              2) An initialized stack has the structure shown below.
 *
 *              OSTCBHighRdy->OSTCBStkPtr + 0x00    Free Entry                    (LOW Memory)
@@ -253,24 +243,25 @@ void  OSTaskStatHook (void)
 *********************************************************************************************************
 */
 
-OS_STK  *OSTaskStkInit (void  (*task)(void *pd),
-                        void   *p_arg,
-                        OS_STK *ptos,
-                        INT16U  opt)
+OS_STK  *OSTaskStkInit (void  (*task)(void *pd), 
+			void   *p_arg, 
+			OS_STK *ptos, 
+			INT16U  opt)
 {
     INT32U  *pstk;
     INT32U   sr_val;
     INT32U   gp_val;
 
 
-    (void)opt;                                 /* Prevent compiler warning for unused arguments        */
+    (void)opt;                                 /* Prevent compiler warning for unused arguments        */              
 
     asm volatile("mfc0   %0,$12"   : "=r"(sr_val));
-    sr_val  |= 0x0000C001;                     /* Initialize stack to allow for tick interrupt         */
+    sr_val  |= 0x00000401;
+    // sr_val  |= 0x0000C001;                     /* Initialize stack to allow for tick interrupt         */
 
     asm volatile("addi   %0,$28,0" : "=r"(gp_val));
 
-    pstk     = (INT32U *)ptos;
+    pstk     = (INT32U *)ptos; 
 
     pstk--;                                    /* Ensure that a free entry is being referenced         */
     *pstk--  = (INT32U)task;                   /* GPR[31] (ra) is used by OSStartHighRdy()             */
@@ -313,15 +304,15 @@ OS_STK  *OSTaskStkInit (void  (*task)(void *pd),
 
 /*
 *********************************************************************************************************
-*                                           TASK SWITCH HOOK
+*                                           TASK SWITCH HOOK    
 *
-* Description: This function is called when a task switch is performed.  This allows you to perform
+* Description: This function is called when a task switch is performed.  This allows you to perform 
 *              other operations during a contex switch.
 *
 * Arguments  : None
 *
 * Note(s)    : 1) Interrupts are disabled during this call.
-*              2) It is assumed that the global pointer OSTCBHighRdy points to the TCB of the task that
+*              2) It is assumed that the global pointer OSTCBHighRdy points to the TCB of the task that 
 *                 will be switched in (i.e. the highest priority task), and that OSTCBCur points to the
 *                 task being switched out (i.e. the preempted task).
 *********************************************************************************************************
@@ -330,11 +321,11 @@ OS_STK  *OSTaskStkInit (void  (*task)(void *pd),
 void  OSTaskSwHook (void)
 {
 }
-#endif
+#endif       
 
 /*
 *********************************************************************************************************
-*                                            OS_TCBInit() HOOK
+*                                            OS_TCBInit() HOOK 
 *
 * Description: This function is called by OS_TCBInit() after setting up most of the TCB.
 *
@@ -366,3 +357,67 @@ void  OSTimeTickHook (void)
 {
 }
 #endif
+
+/*
+*********************************************************************************************************
+*                                              BSP_Interrupt_Handler
+*
+* Description: 中断发生时会调用本函数处理具体的中断事宜
+*
+* Arguments  : None
+*
+* Note(s)    : 1) Interrupts may or may not be ENABLED during this call.
+*********************************************************************************************************
+*/
+void  BSP_Interrupt_Handler (void)
+{
+    INT32U   cause_val;
+    INT32U   cause_reg;
+    INT32U   cause_ip;
+    asm ("mfc0   %0,$13"   : "=r"(cause_val));
+    cause_reg  = cause_val;                     /* 得到Exc Code        */
+    cause_ip = cause_reg & 0x0000FF00;
+    if((cause_ip & 0x00000400) != 0 )
+    {
+        TickISR(0x50000);
+    }
+}
+
+
+/*
+*********************************************************************************************************
+*                                              BSP_Exception_Handler
+*
+* Description: 调用syscall指令、Txx指令、invalid instruciton发生时会调用本函数处理具体的异常事宜
+*
+* Arguments  : None
+*
+* Note(s)    : 1) Interrupts may or may not be ENABLED during this call.
+*********************************************************************************************************
+*/
+void  BSP_Exception_Handler (void)
+{
+    INT32U   cause_val;
+    INT32U   cause_exccode;
+INT32U   EPC;
+
+/* 得到Exc Code */
+    asm volatile("mfc0   %0,$13"   : "=r"(cause_val));
+cause_exccode  = (cause_val & 0x0000007C);                    
+/* 根据Exc Code判断异常类型 */
+    if(cause_exccode == 0x00000020 )                          
+    {
+        OSIntCtxSw();                                             } /* 判断是否是由于syscall指令引起 */
+    else if(cause_exccode == 0x00000034)                  
+    {
+        OSIntCtxSw();
+    } /* 判断是否是由于Txx指令引起 */
+    else if(cause_exccode == 0x00000030)                      
+    {
+        OSIntCtxSw();
+    } /* 判断是否是由于溢出引起 */
+    else if(cause_exccode == 0x00000028)                      
+    {
+        OSIntCtxSw();
+    } /* 判断是否是由于invalid instruction引起 */
+}

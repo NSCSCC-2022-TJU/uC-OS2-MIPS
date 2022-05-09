@@ -1,28 +1,16 @@
 /*
 *********************************************************************************************************
-*                                              uC/OS-II
+*                                               uC/OS-II
 *                                        The Real-Time Kernel
 *
-*                    Copyright 1992-2021 Silicon Laboratories Inc. www.silabs.com
+*                            (c) Copyright 2010, Micrium, Inc., Weston, FL
+*                                         All Rights Reserved
 *
-*                                 SPDX-License-Identifier: APACHE-2.0
-*
-*               This software is subject to an open source license and is distributed by
-*                Silicon Laboratories Inc. pursuant to the terms of the Apache License,
-*                    Version 2.0 available at www.apache.org/licenses/LICENSE-2.0.
-*
-*********************************************************************************************************
-*/
-
-
-/*
-*********************************************************************************************************
-*
-*                                                MIPS14K
-*                                               MicroMips
-*
-* Filename : os_cpu.h
-* Version  : V2.93.01
+*                                              MIPS14K 
+*							                  MicroMips
+* File    : os_cpu.h
+* Version : v2.90
+* By      : NB
 *********************************************************************************************************
 */
 
@@ -63,13 +51,13 @@ typedef unsigned  int  volatile     OS_CPU_SR;    /* The CPU Status Word is 32-b
 * Method #1: Disable/Enable interrupts using simple instructions.  After a critical section, interrupts
 *            will be enabled even if they were disabled before entering the critical section.
 *
-* Method #2: Disable/Enable interrupts and preserve the state of interrupts.  In other words, if
+* Method #2: Disable/Enable interrupts and preserve the state of interrupts.  In other words, if 
 *            interrupts were disabled before entering the critical section, they will be disabled when
 *            leaving the critical section.
 *
 * Method #3: Disable/Enable interrupts and preserve the state of interrupts.  Generally speaking, you
 *            would store the state of the interrupt disable flag in the local variable 'cpu_sr' and then
-*            disable interrupts.  'cpu_sr' is allocated in all of uC/OS-II's functions that need to
+*            disable interrupts.  'cpu_sr' is allocated in all of uC/OS-II's functions that need to 
 *            disable interrupts.  You would restore the interrupt disable state by copying back 'cpu_sr'
 *            into the CPU's status register.
 *********************************************************************************************************
@@ -81,14 +69,14 @@ typedef unsigned  int  volatile     OS_CPU_SR;    /* The CPU Status Word is 32-b
 #define  OS_EXIT_CRITICAL()    OS_CPU_SR_Restore(cpu_sr);
 
 /*
-*********************************************************************************************************
+********************************************************************************************************* 
 *                                                 M14K
 *********************************************************************************************************
 */
 
 #define  OS_STK_GROWTH    1                       /* Stack grows from HIGH to LOW memory               */
 #define  OS_TASK_SW()     asm("\tsyscall\n");
-
+					
 
 
 /*
@@ -108,3 +96,6 @@ void       TickISR(CPU_INT32U tmr_reload);
 
 OS_CPU_SR  OS_CPU_SR_Save(void);               /* See os_cpu_a.s                                       */
 void       OS_CPU_SR_Restore(OS_CPU_SR);       /* See os_cpu_a.s                                       */
+
+
+
