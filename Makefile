@@ -17,8 +17,10 @@ OBJDIR = ./obj
 
 KERNEL_BIN = $(OBJDIR)/ucosii.om
 
-GDB = ~/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/mips-sde-elf-gdb
-OBJDUMP = ~/mips/CodeSourcery/Sourcery_CodeBench_Lite_for_MIPS_ELF/bin/mips-sde-elf-objdump
+GDB = $(CROSS_COMPILE)gdb
+LD = $(CROSS_COMPILE)ld
+OBJDUMP = $(CROSS_COMPILE)objdump
+OBJCOPY = $(CROSS_COMPILE)objcopy
 # QEMU 配置
 QEMU=qemu-system-mipsel
 
@@ -31,7 +33,6 @@ QEMUOPTS=  -machine mipssim \
 
 KERNEL_ENTRY_PA := 0x80000000
 
-#########################################################################
 
 all: ucosii.om ucosii.bin ucosii.asm ucosii.bin ucosii.bin
 	mkdir -p $(OBJDIR)
@@ -57,7 +58,7 @@ subdirs:
 	@for dir in $(SUBDIRS) ; do $(MAKE) -C $$dir || exit 1 ; done
 
 
-qemu: $(KERNEL_BIN)
+qemu: $(KERNEL_BIN) 
 	$(QEMU) $(QEMUOPTS)
 
 asm: $(KERNEL_BIN)
@@ -85,10 +86,14 @@ distclean: clean
 	rm -f $(OBJS) *.bak tags TAGS
 	rm -fr *.*~
 
+# boot/loader.bin: boot/bootasm.S
+# 	$(CC) $(CFLAGS) -g -c -o boot/loader.o $^
+# 	$(LD) $(LDFLAGS) -Ttext 0xbfc00000 -o boot/loader boot/loader.o
+# 	$(OBJCOPY) -O binary -j .text -S boot/loader $@
+
 debug: $(KERNEL_BIN)
 	@tmux new-session -d \
 		"$(QEMU) $(QEMUOPTS) -s -S" && \
 		tmux split-window -h "$(GDB) -ex 'file $(KERNEL_BIN)' -ex 'set arch mipsel' -ex 'target remote localhost:1234'" && \
 		tmux -2 attach-session -d
 
-#########################################################################

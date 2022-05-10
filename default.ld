@@ -1,3 +1,7 @@
+OUTPUT_FORMAT(elf32-tradlittlemips)
+OUTPUT_ARCH(mips:isa32)
+ENTRY(kernel_entry)
+
 MEMORY
         {
         vectors : ORIGIN = 0x80000000, LENGTH = 0x0000001000 

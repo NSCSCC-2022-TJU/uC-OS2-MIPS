@@ -70,3 +70,4 @@ os_tmr.o: os_tmr.c /home/kuangjux/lab/uC-OS2-MIPS/include/ucos_ii.h \
  /home/kuangjux/lab/uC-OS2-MIPS/include/os_cpu.h \
  /home/kuangjux/lab/uC-OS2-MIPS/include/cpu.h
 os_cpu_a.o: os_cpu_a.S
+entry.o: entry.S

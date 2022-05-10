@@ -16,7 +16,8 @@ OBJS	=   os_core.o \
 			os_time.o \
 			os_tmr.o 
 
-SOBJS	= os_cpu_a.o
+SOBJS	= os_cpu_a.o \
+			entry.o
 			
 all: $(LIB)
 

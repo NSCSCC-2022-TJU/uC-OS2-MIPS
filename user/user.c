@@ -88,11 +88,11 @@ void main()
     OSInit();
     uart_init();
     uart_print("UART initialization done ! \r\n", 29);
-    gpio_init();
-    uart_print("GPIO initialization done ! \r\n", 29);	
-    OSTaskCreate(TaskStart, (void *)0, &TaskStartStk[TASK_STK_SIZE - 1], 0);
-    OSTaskCreate(TaskGpio, (void *)0, &TaskGpioStk[TASK_STK_SIZE - 1], 1);
-    OSTaskCreate(Taskx7Seg, (void *)0x0, &Taskx7SegStk[TASK_STK_SIZE - 1], 2);
-    OSStart();  
+    // gpio_init();
+    // uart_print("GPIO initialization done ! \r\n", 29);	
+    // OSTaskCreate(TaskStart, (void *)0, &TaskStartStk[TASK_STK_SIZE - 1], 0);
+    // OSTaskCreate(TaskGpio, (void *)0, &TaskGpioStk[TASK_STK_SIZE - 1], 1);
+    // OSTaskCreate(Taskx7Seg, (void *)0x0, &Taskx7SegStk[TASK_STK_SIZE - 1], 2);
+    // OSStart();  
     return;
 }
