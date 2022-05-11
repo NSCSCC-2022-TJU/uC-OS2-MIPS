@@ -27,6 +27,8 @@
 *********************************************************************************************************
 */
 
+#include <asm/mipsregs.h>
+
     .global  OSStartHighRdy
     .global  OSIntCtxSw
     .global  OS_CPU_SR_Save
@@ -86,17 +88,36 @@
 
 .space  0x10000
     // 添加下面的vector section
-    .section .vectors, "ax"
+.section .startup
+.global kernel_entry
     
-    .org 0x0
-_reset:
+    # .org 0x0
+kernel_entry:
     lui $28,0x0
     la $29,_stack_addr
+# ifdef MACH_QEMU
+	/* Clear watch registers */
+	mtc0	$zero, CP0_WATCHLO
+	mtc0	$zero, CP0_WATCHHI
+    /* WP(Watch Pending), SW0/1 should be cleared */
+	mtc0	$zero, CP0_CAUSE
+  /* clear SR(ERL), which is 1 after reset */
+	mtc0	$zero, CP0_STATUS
+    la      $t0, __exception_vector
+    #TODO
+    mtc0 $t0, $15, 1 
+
+    mfc0 $t0, CP0_STATUS
+    li   $t1, ~ST0_BEV
+    and  $t0, $t0, $t1
+    mtc0 $t0, CP0_STATUS
+#endif
     la $26,main  /* 跳转至main函数开始运行操作系统 */
     jr $26
     nop
 
     .org 0x380
+__exception_vector:
     // 根据Cause寄存器的exccode段确定是中断还是异常
     mfc0 $8, $13
     li $9, 0x7c

@@ -3,19 +3,15 @@ OUTPUT_ARCH(mips:isa32)
 ENTRY(kernel_entry)
 
 MEMORY
-        {
-        vectors : ORIGIN = 0x80000000, LENGTH = 0x0000001000 
-        ram     : ORIGIN = 0x80001000, LENGTH = 0x800fffff - 0x80001000
+        { 
+        ram : ORIGIN = 0x80000000, LENGTH = 0x800fffff - 0x80000000
         }
  
 SECTIONS
 {
-        .vectors :
-        {
-		*(.vectors)
-        } > vectors
 
 	.text : {
+		*(.startup)
 		*(.text)
 		_endtext = .;
 	}  > ram

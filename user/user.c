@@ -3,6 +3,7 @@
 #include "uart.h"
 #include "gpio.h"
 #include "timer.h"
+#include "console.h"
 
 #define TASK_STK_SIZE 256
 OS_STK TaskStartStk[TASK_STK_SIZE];
@@ -86,13 +87,20 @@ void Taskx7Seg(void *pdata) {
 void main()
 {
     OSInit();
-    uart_init();
-    uart_print("UART initialization done ! \r\n", 29);
+    pic_init();
+    cons_init();
+    cons_putc('H');
+    cons_putc('e');
+    cons_putc('l');
+    cons_putc('l');
+    cons_putc('o');
+    // uart_init();
+    // uart_print("UART initialization done ! \r\n", 29);
     // gpio_init();
     // uart_print("GPIO initialization done ! \r\n", 29);	
-    // OSTaskCreate(TaskStart, (void *)0, &TaskStartStk[TASK_STK_SIZE - 1], 0);
+    OSTaskCreate(TaskStart, (void *)0, &TaskStartStk[TASK_STK_SIZE - 1], 0);
     // OSTaskCreate(TaskGpio, (void *)0, &TaskGpioStk[TASK_STK_SIZE - 1], 1);
     // OSTaskCreate(Taskx7Seg, (void *)0x0, &Taskx7SegStk[TASK_STK_SIZE - 1], 2);
-    // OSStart();  
+    OSStart();  
     return;
 }

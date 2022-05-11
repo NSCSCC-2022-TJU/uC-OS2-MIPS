@@ -14,10 +14,11 @@ OBJS	=   os_core.o \
 			os_sem.o \
 			os_task.o \
 			os_time.o \
-			os_tmr.o 
+			os_tmr.o \
+			console.o \
+			intr.o 
 
-SOBJS	= os_cpu_a.o \
-			entry.o
+SOBJS	= os_cpu_a.o
 			
 all: $(LIB)
 
@@ -26,8 +27,14 @@ $(LIB):	$(OBJS) $(SOBJS)
 
 
 
-.depend: Makefile $(OBJS:.o=.c) $(SOBJS:.o=.S)
-		$(CC) -EL -M $(CFLAGS) $(OBJS:.o=.c) $(SOBJS:.o=.S) > $@
+# .depend: Makefile $(OBJS:.o=.c) $(SOBJS:.o=.S)
+# 		$(CC) -c -mips1 -D__ASSEMBLY__ $(CFLAGS) $(OBJS:.o=.c) $(SOBJS:.o=.S) > $@
+
+.depend: $(OBJS:.o=.c)
+	$(CC) -c -mips1 $(CFLAGS) $(OBJS:.o=.c) > $@
+
+.depend: $(SOBJS:.o=.S)
+	$(CC) -c -mips32 -D__ASSEMBLY__  $(CFLAGS) $(SOBJS:.o=.S) > $@
 
 
 sinclude .depend

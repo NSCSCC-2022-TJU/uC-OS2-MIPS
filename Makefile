@@ -27,7 +27,6 @@ QEMU=qemu-system-mipsel
 QEMUOPTS=  -machine mipssim \
 		   -m 32M \
 		   -nographic \
-		   -bios none \
 		   -kernel $(KERNEL_BIN) \
 		   -monitor none -serial stdio
 
@@ -94,6 +93,6 @@ distclean: clean
 debug: $(KERNEL_BIN)
 	@tmux new-session -d \
 		"$(QEMU) $(QEMUOPTS) -s -S" && \
-		tmux split-window -h "$(GDB) -ex 'file $(KERNEL_BIN)' -ex 'set arch mipsel' -ex 'target remote localhost:1234'" && \
+		tmux split-window -h "$(GDB) -ex 'file $(KERNEL_BIN)' -ex 'set arch auto' -ex 'target remote localhost:1234'" && \
 		tmux -2 attach-session -d
 

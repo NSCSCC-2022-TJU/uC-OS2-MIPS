@@ -7,6 +7,15 @@ CONFIG_SHELL	:= $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 HOSTCC		= cc
 HOSTCFLAGS	= -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer
 
+ON_FPGA = n
+
+ifeq  ($(ON_FPGA), y)
+FPGA_LD_FLAGS += -S
+MACH_DEF := -DMACH_FPGA
+else
+MACH_DEF := -DMACH_QEMU
+endif
+
 
 
 #
@@ -22,7 +31,7 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
 RANLIB	= $(CROSS_COMPILE)ranlib
 
-CFLAGS += -I$(TOPDIR)/include -I$(TOPDIR)/include/user -I$(TOPDIR)/src -I$(TOPDIR)/user -mips1 -G0  -EL# -Wall -Wstrict-prototypes -Werror-implicit-function-declaration -fomit-frame-pointer -fno-strength-reduce -O2 -g -pipe -fno-builtin -nostdlib
+CFLAGS += -DMACH_QEMU -I$(TOPDIR)/include -I$(TOPDIR)/include/user -I$(TOPDIR)/src -I$(TOPDIR)/user -mips1 -G0  -EL# -Wall -Wstrict-prototypes -Werror-implicit-function-declaration -fomit-frame-pointer -fno-strength-reduce -O2 -g -pipe -fno-builtin -nostdlib
 # CFLAGS += -I$(TOPDIR)/include -I$(TOPDIR)/include/init -I$(TOPDIR)/src -I$(TOPDIR)/user -mips1 -G0 -O2 -EL# -Wall -Wstrict-prototypes -Werror-implicit-function-declaration -fomit-frame-pointer -fno-strength-reduce -O2 -g -pipe -fno-builtin -nostdlib
 
 ASFLAGS += $(CFLAGS) -EL

@@ -4,12 +4,12 @@ OBJS = user.o
 
 all:	$(LIB)
 
-$(LIB):	$(OBJS) $(SOBJS)
-	$(LD) -EL -r -o $@ $(OBJS) $(SOBJS)
+$(LIB):	$(OBJS)
+	$(LD) -EL -r -o $@ $(OBJS)
 
 
 .depend:	Makefile $(OBJS:.o=.c)
-		$(CC) -EL -M $(CFLAGS) $(OBJS:.o=.c) > $@
+		$(CC) -c -mips1  $(CFLAGS) $(OBJS:.o=.c) > $@
 
 sinclude .depend
 
